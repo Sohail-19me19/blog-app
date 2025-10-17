@@ -1,0 +1,22 @@
+@import "tailwindcss" important;
+
+html,
+body {
+  @apply h-full w-full m-0 p-0;
+}
+* {
+  @apply box-border;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #222222;
+}
+::-webkit-scrollbar-thumb {
+  background: #303030;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #353535;
+}
