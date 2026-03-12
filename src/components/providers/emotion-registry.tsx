@@ -17,7 +17,7 @@ export default function EmotionRegistry({
     const prevInsert = cache.insert;
     let inserted: string[] = [];
 
-    cache.insert = (...args: any[]) => {
+    cache.insert = (...args: Parameters<typeof prevInsert>) => {
       const serialized = args[1];
       if (cache.inserted[serialized.name] === undefined) {
         inserted.push(serialized.name);
@@ -50,5 +50,3 @@ export default function EmotionRegistry({
 
   return <CacheProvider value={cache}>{children}</CacheProvider>;
 }
-
-
