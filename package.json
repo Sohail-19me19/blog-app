@@ -13,7 +13,7 @@
     "prisma-generate": "npx prisma generate --schema=src/db/schema.prisma",
     "prisma-studio": "npx prisma studio --schema=src/db/schema.prisma",
     "prisma-push": "npx prisma db push --schema=src/db/schema.prisma",
-    "postinstall": "npm run prisma generate"
+    "postinstall": "npm run prisma-generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
