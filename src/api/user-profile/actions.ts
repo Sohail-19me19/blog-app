@@ -1,5 +1,5 @@
 "use server";
-import { CLOUD_NAME, UPLOAD_PRESET } from "@src/config";
+import { CLOUDINARY_CLOUD_NAME, UPLOAD_PRESET } from "@src/config";
 import { db } from "@src/db";
 import { withAuth } from "@src/helpers";
 import { User } from "next-auth";
@@ -15,11 +15,11 @@ export const updatedUserImageAction = async (data: ImageInput) =>
     formData.append("upload_preset", UPLOAD_PRESET as string);
 
     const uploadRes = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
 
     const res = await uploadRes.json();
@@ -47,7 +47,7 @@ export const changePasswordAction = async (data: ChangePasswordInput) =>
 
       const isOldPasswordValid = await bcrypt.compare(
         args.oldPassword,
-        existingUser.password!
+        existingUser.password!,
       );
       if (!isOldPasswordValid) throw new Error("Old password is incorrect");
 
@@ -59,5 +59,5 @@ export const changePasswordAction = async (data: ChangePasswordInput) =>
       });
 
       return { success: true, message: "Password updated successfully" };
-    }
+    },
   );
