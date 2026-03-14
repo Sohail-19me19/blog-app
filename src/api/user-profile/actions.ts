@@ -10,20 +10,19 @@ export const updatedUserImageAction = async (data: ImageInput) =>
   withAuth<ImageInput, Promise<User>>(data, async (args, user) => {
     if (!args.image) throw new Error("no file provided");
 
+    const formData = new FormData();
+    formData.append("file", args.image);
+    formData.append("upload_preset", UPLOAD_PRESET as string);
+
     const uploadRes = await fetch(
       `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          file: args.image,
-          upload_preset: UPLOAD_PRESET,
-        }),
+        body: formData,
       },
     );
 
     const res = await uploadRes.json();
-    if (!res.secure_url) throw new Error("Cloudinary upload failed");
 
     return await db.user.update({
       where: { id: user.id },

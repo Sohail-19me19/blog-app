@@ -16,44 +16,26 @@ import {
   Paper,
 } from "@mui/material";
 
-// converts File to base64 string
-const toBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-  });
-
 export default function ChangeImage() {
   const { mutateAsync: updateImage, isPending } = useUpdateImage();
   const { data: session, update } = useSession();
 
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  // store the actual File separately
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const {
+    register,
     handleSubmit,
     formState: { errors },
     reset,
-    setError,
   } = useForm<ImageInput>({
     resolver: zodResolver(userImageSchema),
+    defaultValues: {} as any,
   });
 
-  const onSubmit = handleSubmit(async () => {
+  const onSubmit = handleSubmit(async (data) => {
     try {
-      if (!selectedFile) {
-        setError("image", { message: "Image file is required" });
-        return;
-      }
-
-      // convert File to base64 here on the client before sending to server action
-      const base64 = await toBase64(selectedFile);
-
-      const updatedUser = await updateImage({ image: base64 });
+      const updatedUser = await updateImage(data);
 
       await update({
         user: {
@@ -63,9 +45,10 @@ export default function ChangeImage() {
       });
 
       reset();
-      setSelectedFile(null);
-      setPreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+        setPreview(null);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -91,6 +74,7 @@ export default function ChangeImage() {
           Upload Profile Image
         </Typography>
 
+        {/* Image Preview */}
         <Box
           onClick={() => fileInputRef.current?.click()}
           sx={{
@@ -122,27 +106,33 @@ export default function ChangeImage() {
           )}
         </Box>
 
-        {/* File input — just stores file in state, does NOT pass File to react-hook-form */}
+        {/* File Input (hidden) */}
         <input
           type="file"
           accept="image/*"
-          ref={fileInputRef}
+          {...register("image")}
+          ref={(e) => {
+            register("image").ref(e);
+            fileInputRef.current = e;
+          }}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setSelectedFile(file);
               setPreview(URL.createObjectURL(file));
+              reset({ image: file });
             }
           }}
           style={{ display: "none" }}
         />
 
+        {/* Error Message */}
         {errors.image && (
           <Typography variant="body2" color="error">
             {errors.image.message?.toString()}
           </Typography>
         )}
 
+        {/* Submit Button */}
         <Button
           type="submit"
           variant="contained"
