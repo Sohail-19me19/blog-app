@@ -1,20 +1,7 @@
 import { z } from "zod";
 
 export const userImageSchema = z.object({
-  image: z
-    .any()
-    .transform((input) => {
-      if (input instanceof File) return input as File;
-      if (typeof (input as any)?.item === "function") {
-        return ((input as FileList)?.item(0) as File) ?? null;
-      }
-      if (Array.isArray(input) && input.length > 0)
-        return (input[0] as File) ?? null;
-      return null;
-    })
-    .refine((file) => file instanceof File, {
-      message: "Image file is required",
-    }),
+  image: z.string().min(1, "Image is required"), // base64 string
 });
 
 export type ImageInput = z.infer<typeof userImageSchema>;
