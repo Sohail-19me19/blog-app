@@ -26,14 +26,18 @@ const SignInPage = () => {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await signInAction(data);
-    } catch (err: any) {
-      if (err.name === "CredentialsSignin") {
-        setError("email", { message: err.message.split(".")[0] });
-        setError("password", { message: err.message.split(".")[0] });
-      } else {
-        console.error(err);
+      const result = await signInAction(data);
+      if (!result.ok && result.error) {
+        const msg = result.error.includes("CredentialsSignin")
+          ? "Invalid Email and Password!"
+          : result.error;
+        setError("email", { message: msg });
+        setError("password", { message: msg });
       }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError("email", { message });
+      setError("password", { message });
     }
   });
 

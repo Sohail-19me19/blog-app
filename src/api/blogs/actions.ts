@@ -1,8 +1,8 @@
 "use server";
 
-import { Blog, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { db } from "@src/db";
-import { withAuth } from "@src/helpers";
+import { toPlainObject, withAuth } from "@src/helpers";
 import {
   BlogWithUser,
   EditDescInput,
@@ -11,7 +11,7 @@ import {
 } from "./dto";
 
 export const getAllPublishedBlogsAction = async (): Promise<BlogWithUser[]> => {
-  return await db.blog.findMany({
+  const list = await db.blog.findMany({
     where: { status: "published" },
     orderBy: { createdAt: "desc" },
     include: {
@@ -20,55 +20,62 @@ export const getAllPublishedBlogsAction = async (): Promise<BlogWithUser[]> => {
       },
     },
   });
+  return toPlainObject(list);
 };
 
 export const addBlogAction = async (
   data: Omit<Prisma.BlogUncheckedCreateInput, "userId">
 ) =>
-  withAuth<Omit<Prisma.BlogUncheckedCreateInput, "userId">, Blog>(
+  withAuth<Omit<Prisma.BlogUncheckedCreateInput, "userId">, Awaited<ReturnType<typeof db.blog.create>>>(
     data,
     async (args, user) => {
-      return await db.blog.create({
+      const created = await db.blog.create({
         data: { ...args, userId: user.id! },
       });
+      return toPlainObject(created);
     }
   );
 
 export const getAllUsersBlogsAction = async () =>
-  withAuth<undefined, Blog[]>(undefined, async (_, user) => {
-    return await db.blog.findMany({
+  withAuth<undefined, Awaited<ReturnType<typeof db.blog.findMany>>>(undefined, async (_, user) => {
+    const list = await db.blog.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
+    return toPlainObject(list);
   });
 
 export const deleteBlogAction = async (id: number) =>
-  withAuth<number, Blog>(id, async (blogId) => {
-    return db.blog.delete({
+  withAuth<number, Awaited<ReturnType<typeof db.blog.delete>>>(id, async (blogId) => {
+    const deleted = await db.blog.delete({
       where: { id: blogId },
     });
+    return toPlainObject(deleted);
   });
 
 export const editBlogTitleAction = async (data: EditTitleInput) =>
-  withAuth<EditTitleInput, Blog>(data, async (args) => {
-    return await db.blog.update({
+  withAuth<EditTitleInput, Awaited<ReturnType<typeof db.blog.update>>>(data, async (args) => {
+    const updated = await db.blog.update({
       where: { id: args.id },
       data: { title: args.title },
     });
+    return toPlainObject(updated);
   });
 
 export const editBlogDescAction = async (data: EditDescInput) =>
-  withAuth<EditDescInput, Blog>(data, async (args) => {
-    return await db.blog.update({
+  withAuth<EditDescInput, Awaited<ReturnType<typeof db.blog.update>>>(data, async (args) => {
+    const updated = await db.blog.update({
       where: { id: args.id },
       data: { description: args.description },
     });
+    return toPlainObject(updated);
   });
 
 export const editBlogStatusAction = async (data: EditStatusInput) =>
-  withAuth<EditStatusInput, Blog>(data, async (args) => {
-    return await db.blog.update({
+  withAuth<EditStatusInput, Awaited<ReturnType<typeof db.blog.update>>>(data, async (args) => {
+    const updated = await db.blog.update({
       where: { id: args.id },
       data: { status: args.status },
     });
+    return toPlainObject(updated);
   });

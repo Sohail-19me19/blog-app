@@ -14,6 +14,7 @@ const SignUpPage = () => {
     handleSubmit,
     register,
     formState: { errors, isSubmitting },
+    setError,
   } = useForm<SignUpInput>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
@@ -25,7 +26,10 @@ const SignUpPage = () => {
   });
 
   const onSubmit = handleSubmit(async (data) => {
-    await signUpAction(data);
+    const result = await signUpAction(data);
+    if (!result.ok && result.error) {
+      setError("root", { message: result.error });
+    }
   });
 
   const handleGoogleLogin = () => {
@@ -119,6 +123,9 @@ const SignUpPage = () => {
             {...register("password")}
           />
           <p className="h-6 text-sm text-red-500">{errors.password?.message}</p>
+          {errors.root?.message && (
+            <p className="text-sm text-red-500 mb-2">{errors.root.message}</p>
+          )}
 
           <button
             className="w-full cursor-pointer rounded-full py-2 font-semibold text-white bg-[#151515]"

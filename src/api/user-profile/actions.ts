@@ -1,13 +1,12 @@
 "use server";
 import { CLOUDINARY_CLOUD_NAME, UPLOAD_PRESET } from "@src/config";
 import { db } from "@src/db";
-import { withAuth } from "@src/helpers";
-import { User } from "next-auth";
+import { toPlainObject, withAuth } from "@src/helpers";
 import { ChangePasswordInput, ImageInput, InfoInput } from "./dto";
 import bcrypt from "bcryptjs";
 
 export const updatedUserImageAction = async (data: ImageInput) =>
-  withAuth<ImageInput, Promise<User>>(data, async (args, user) => {
+  withAuth<ImageInput, Awaited<ReturnType<typeof db.user.update>>>(data, async (args, user) => {
     if (!args.image) throw new Error("no file provided");
 
     const formData = new FormData();
@@ -24,18 +23,20 @@ export const updatedUserImageAction = async (data: ImageInput) =>
 
     const res = await uploadRes.json();
 
-    return await db.user.update({
+    const updated = await db.user.update({
       where: { id: user.id },
       data: { image: res.secure_url },
     });
+    return toPlainObject(updated);
   });
 
 export const updateUserInfoAction = async (data: InfoInput) =>
-  withAuth<InfoInput, Promise<User>>(data, async (args, user) => {
-    return await db.user.update({
+  withAuth<InfoInput, Awaited<ReturnType<typeof db.user.update>>>(data, async (args, user) => {
+    const updated = await db.user.update({
       where: { id: user.id },
       data: { name: data.name, email: data.email },
     });
+    return toPlainObject(updated);
   });
 
 export const changePasswordAction = async (data: ChangePasswordInput) =>

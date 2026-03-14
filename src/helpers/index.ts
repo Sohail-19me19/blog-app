@@ -1,6 +1,11 @@
 import { auth } from "@src/libs";
 import { User } from "next-auth";
 
+/** Use for Server Action return values so only plain objects are sent to the client. */
+export function toPlainObject<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export async function withAuth<TArgs, TResult>(
   args: TArgs,
   fn: (args: TArgs, user: User) => TResult | Promise<TResult>
